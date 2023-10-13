@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "meeting-minutes-edit-webpart-client-side-solution",
+    "id": "b5c3a619-10a6-4b81-b2d8-d4dfab6a8e35",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.16.1"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "meeting-minutes-edit-webpart description"
+      },
+      "longDescription": {
+        "default": "meeting-minutes-edit-webpart description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "meeting-minutes-edit-webpart Feature",
+        "description": "The feature that activates elements of the meeting-minutes-edit-webpart solution.",
+        "id": "a2aeb981-4e02-4970-86a3-710b52631dac",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/meeting-minutes-edit-webpart.sppkg"
+  }
+}

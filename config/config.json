@@ -1,0 +1,19 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "meeting-minute-edit-webpart-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/meetingMinuteEditWebpart/MeetingMinuteEditWebpartWebPart.js",
+          "manifest": "./src/webparts/meetingMinuteEditWebpart/MeetingMinuteEditWebpartWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "MeetingMinuteEditWebpartWebPartStrings": "lib/webparts/meetingMinuteEditWebpart/loc/{locale}.js",
+    "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js"
+  }
+}

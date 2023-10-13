@@ -1,0 +1,21 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "16.19.1",
+    "sdksVersions": {
+      "@microsoft/microsoft-graph-client": "3.0.2",
+      "@microsoft/teams-js": "2.4.1"
+    },
+    "version": "1.16.1",
+    "libraryName": "meeting-minutes-edit-webpart",
+    "libraryId": "b5c3a619-10a6-4b81-b2d8-d4dfab6a8e35",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "meeting-minutes-edit-webpart",
+    "solutionShortDescription": "meeting-minutes-edit-webpart description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}
