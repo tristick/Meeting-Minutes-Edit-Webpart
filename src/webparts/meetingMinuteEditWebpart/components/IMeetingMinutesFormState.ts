@@ -19,6 +19,9 @@ export interface IMeetingMinutesFormState {
     pmdocuments:string,
     msdocuments:string,
     mmdocuments:string,
+    expmdocuments:string,
+    exmsdocuments:string,
+    exmmdocuments:string,
     usersdisplayName:string []
 
 }

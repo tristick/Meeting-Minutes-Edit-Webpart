@@ -62,25 +62,11 @@ export const updateData=(props:IMeetingMinutesFormProps ,itemId: number, data: a
   });
 }
 
-/* export const writeFile = (props:IMeetingMinutesFormProps,folderUrl:any,filename:any, file:any,meetingid:string,weburl?:any)=>{
-  const _sp :SPFI = getSP(props.context) ;
-  const list = _sp.web.lists.getByTitle(formconst.LIBRARYNAME);
-  
-  const fileContent = "Hello, world!";
-  const fileName = "example.txt";
 
-  try {
-    const file = await list.rootFolder.files.add(fileName, fileContent);
-    console.log(`File '${fileName}' has been written to SharePoint successfully!`);
-  } catch (error) {
-    console.error("Error writing to file:", error);
-  }
-}
- */
 export const uploadAttachment = (props:IMeetingMinutesFormProps,folderUrl:any,filename:any, file:any,meetingid:string,weburl?:any)=>{
 const _sp :SPFI = getSP(props.context) ;
   
-_sp.web.folders.addUsingPath(folderUrl);
+//_sp.web.folders.addUsingPath(folderUrl);
   return new Promise((resolve,reject) =>{
     _sp.web.getFolderByServerRelativePath(folderUrl).files.addChunked(filename, file)
     .then((items) => {

@@ -10,14 +10,14 @@ import { IMeetingMinutesFormState } from './IMeetingMinutesFormState';
 //,Label
 import { IStyleFunctionOrObject, ITextFieldStyleProps, ITextFieldStyles, MessageBar, MessageBarType, PrimaryButton, SpinnerSize, Stack, TextField } from 'office-ui-fabric-react';
 import { DateConvention, DateTimePicker, ListItemPicker } from '@pnp/spfx-controls-react';
-import { getCustomerItem, getItem, readFile, submitDataAndGetId, updateData, uploadAttachment } from '../../../services/formservices';
+import {  getItem, readFile, updateData, uploadAttachment } from '../../../services/formservices';
 import ReactDOM from 'react-dom';
 import { isEmpty } from '@microsoft/sp-lodash-subset';
-import { SPFI } from '@pnp/sp';
-import { getSP } from '../../../pnpjsconfig';
+
 import "@pnp/sp/files";
 import { IHttpClientOptions, HttpClient } from '@microsoft/sp-http';
 import { Spinner } from '@fluentui/react';
+
 
 const textFieldStyles: Partial<ITextFieldStyles> = {
   field: {
@@ -31,12 +31,12 @@ let isbuttondisbled : boolean = false;
 let buttontext : string = "Submit";
 let isselectedattendees:boolean = false ;
 let listId: number;
-let customerreference:string;
 let isLoading : boolean = false;
 let pmcontents:string = "";
 let mmcontents:string ="";
 let actcontents:string = "";
-let mscontents:string=""
+let mscontents:string="";
+
 
 export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMinutesFormProps, IMeetingMinutesFormState> {
   private pmdt: DataTransfer; 
@@ -73,6 +73,9 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
       pmdocuments:"",
       msdocuments:"",
       mmdocuments:"",
+      expmdocuments:"",
+      exmsdocuments:"",
+      exmmdocuments:"",
       usersdisplayName:[]
 
     }
@@ -82,7 +85,7 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
   public componentDidMount = async ()=>
   {
    
-    this.fetchCustomer();
+  
     //console.log(this.props.context.pageContext.site);
     const url = document.location.search //window.location.href
     const urlParams = new URLSearchParams (url);
@@ -105,46 +108,36 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
     this.setState({actions:decodeURIComponent(actcontents)})
 
     const item: IListMM[] = await getItem(this.props,paramtitle);
-    console.log('Fetched item:', item);
+   
     const parsedDate = new Date((item[0].MeetingDate).toString());
     
- 
+    listId = item[0].ID
     
     this.setState({
 
     title: item[0].Title,
     meetingtitle:item[0].MeetingTitle,
-    //customer:item[0].Customer,
+    customer:item[0].Customer,
     location:item[0].Location,
     meetingdate:parsedDate,
     users:(item[0].AttendeesMOLEADisplayNames).split(','),
     attendeeDropdown:item[0].AttendeesCustomer,
     attendeesother:item[0].AttendeesOther,
-    //pmdocuments:item[0].PurposeofMeetingDocuments,
-    //msdocuments:item[0].ManagementSummaryDocuments,
-    //mmdocuments:item[0].MainMinutesDocuments, 
+    expmdocuments:item[0].PurposeofMeetingDocuments,
+    exmsdocuments:item[0].ManagementSummaryDocuments,
+    exmmdocuments:item[0].MainMinutesDocuments, 
+    
     //usersdisplayName:item[0].AttendeesMOLEADisplayNames
   })
-   
+ if(isEmpty(item[0].AttendeesMOLEADisplayNames))
+ { isselectedattendees = false;  }else{
+  isselectedattendees = true; 
+  this.setState({users:item[0].AttendeesMOLEAId}) 
+  this.setState({usersdisplayName:(item[0].AttendeesMOLEADisplayNames).split(',')})
+ }
+
   }
 
-  fetchCustomer = async () => {
-    
-      const customerItem:any = await getCustomerItem(this.props);
-      console.log(customerItem)
-      try {
-        const customer = customerItem[0].Title
-        console.log(customer)
-        const customerRef = "MM";//customerItem[0].RefCode;
-        console.log(customerRef)
-      this.setState({customer:customer});
-      customerreference = customerRef
-
-   
-    } catch (error) {
-      console.error('Error fetching customer items:', error);
-    }
-  };
 
   private onpurposeofmeetingchange = (newText: string) => {
     
@@ -167,6 +160,24 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
    
     return newText;
   }
+ 
+  private _onmeetingtitle=(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newText: string): void =>{ 
+    //isemptybaf=isEmpty(newText)
+    this.setState({meetingtitle:newText})
+  
+  }
+  private _onlocation=(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newText: string): void =>{ 
+    //isemptybaf=isEmpty(newText)
+    this.setState({location:newText})
+  
+  }
+
+  private onchangeattendeesother=(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newText: string): void =>{ 
+    this.setState({attendeesother:newText})
+  }
+
+
+
   private _onchangedmeetingDate=(mdate: any): void =>{  
     this.setState({ meetingdate: mdate }); 
 
@@ -192,20 +203,9 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
       isselectedattendees  = false;
 
     }
-     
-       
-       
+  
   }
   
-  /*private _onattendesSelectedItem=(data: { key: string; name: string }[])=> {
-    
-    if(data.length == 0 ){
-      this.setState({attendeeDropdown:""})
-    }else{
-    this.setState({attendeeDropdown:data[0].name as string})
-   
-    }
-  }*/
 
   private _onattendesSelectedItem=(data: { key: string; name: string }[])=> {
 
@@ -226,24 +226,13 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
     }
   }
 
-  private _onmeetingtitle=(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newText: string): void =>{ 
-    //isemptybaf=isEmpty(newText)
-    this.setState({meetingtitle:newText})
-  
-  }
-  private _onlocation=(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newText: string): void =>{ 
-    //isemptybaf=isEmpty(newText)
-    this.setState({location:newText})
-  
-  }
-
-  private onchangeattendeesother=(ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newText: string): void =>{ 
-    this.setState({attendeesother:newText})
-  }
+ 
 
   private handleAddattendee = () => {
-   const { attendeesother, interestedPartiesexternal } = this.state;
-    if (attendeesother.trim() !== ''&& /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(attendeesother)) {
+    const { attendeesother, interestedPartiesexternal } = this.state;
+    /*if (attendeesother.trim() !== ''&& /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(attendeesother)) {
+
+      //if (attendeesother.trim() !== ''&& /^([a-zA-Z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+(\.[a-zA-Z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.([a-zA-Z]{2,})){1}(;[a-zA-Z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+(\.[a-zA-Z0-9,!#\$%&'\*\+/=\?\^_`\{\|}~-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.([a-zA-Z]{2,}))*$/.test(attendeesother)) {
       const updatedParties = [...interestedPartiesexternal, attendeesother]
       console.log(updatedParties)
   
@@ -254,7 +243,44 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
       isemailInvalid = true;
       this.setState({attendeesother:"",allfieldsvalid:false})
   
+    } */
+
+    if (attendeesother.trim() !== '') {
+  
+  const emailAddresses = attendeesother.split(',').map(email => email.trim());
+
+
+
+  const validEmails = [];
+
+  for (const email of emailAddresses) {
+    if (/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+      validEmails.push(email);
+        isemailInvalid = false;
+    } else {
+      
+      isemailInvalid = true;
     }
+  }
+
+  if (!isemailInvalid) {
+   
+    const updatedParties = [...interestedPartiesexternal, ...validEmails];
+    this.setState({
+      interestedPartiesexternal: updatedParties,
+      attendeesother: '',
+      interestedPartiesexternalstr: (JSON.stringify(updatedParties)).slice(1, -1).replace(/"/g, '').replace(/,/g, ", "),
+    });
+    this.setState({ allfieldsvalid: true });
+  } else {
+    
+    this.setState({ attendeesother: '', allfieldsvalid: false });
+  }
+} else {
+  
+  this.setState({ allfieldsvalid: false });
+}
+
   }
 
   private purposeofmeetinghandleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -398,15 +424,12 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
         });
       };
 
-      private _createItem  =async (props:IMeetingMinutesFormProps):Promise<void>=>{
-        //1048576 bytes = 1MB
-        //|| (this.state.attendeeDropdown).length == 0
-        //let allRichtextsizebinary = new Blob([this.state.purposeofmeeting]).size + new Blob([this.state.managementsummary]).size + new Blob([this.state.mainminutes]).size + new Blob([this.state.actions]).size;
-        //|| new Blob([this.state.purposeofmeeting]).size >1000000|| new Blob([this.state.managementsummary]).size>1000000 ||
-     //new Blob([this.state.mainminutes]).size>1000000 || new Blob([this.state.actions]).size>1000000 || allRichtextsizebinary>1048000
+      _updateItem  =async (props:IMeetingMinutesFormProps):Promise<void>=>{
+        let folderUrl: string;
+        folderUrl = formconst.LIBRARYNAME + "/"+ this.state.title;
+
       if(isselectedattendees==false || isEmpty(this.state.meetingtitle)||isEmpty(this.state.location) || isEmpty(this.state.purposeofmeeting) || 
-      isEmpty(this.state.mainminutes) 
-      )
+      isEmpty(this.state.mainminutes))
           {
           this.setState({allfieldsvalid:false}) ; 
           console.log(this.state.allfieldsvalid)
@@ -419,64 +442,8 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
             isLoading = true;
           }
 
-          let folderUrl: string;
-
-          const data = {
-            Title: 'New Item creation in process',
-            //PurposeOfMeeting: this.state.purposeofmeeting,
-           // ManagementSummary: this.state.managementsummary,
-            //MainMinutes: this.state.mainminutes,
-            //Actions: this.state.actions,
-           
           
-         }; 
 
-         submitDataAndGetId(this.props,data).then(async (itemId: any) => {
-          listId = itemId   
-          console.log(`Item created with ID: ${itemId}`);
-  
-          //Request ID format
-          let now = new Date();
-          let options: Intl.DateTimeFormatOptions = {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        };
-        let listIdstr
-         if(listId < 1000 && listId > 99){
-          listIdstr = "0"+String(listId)
-        }else if(listId < 100 && listId > 9){
-          listIdstr ="00"+String(listId)
-        } else if(listId < 10) {
-          listIdstr ="000"+String(listId)
-        }else{
-          listIdstr = String(listId)
-        }
-
-       /* if(listId < 1000 && listId > 100){
-          listIdstr = "0"+String(listId)
-        }else if(listId < 100){
-          listIdstr ="00"+String(listId)
-        } else if(listId < 10) {
-          listIdstr ="000"+String(listId)
-        }else{
-          listIdstr = String(listId)
-        }*/
-        
-        console.log(listIdstr)
-        let formattedDate = now.toLocaleDateString('en-GB', options).replace(/\//g, '');;
-        let lastitemid = (listIdstr)+"-"+customerreference +"-" +formattedDate.toString();
-  
-     folderUrl =  formconst.LIBRARYNAME +"/" + lastitemid
-      this.setState({title:lastitemid})
-      
-          
-     
-    }).then(async () => {
-      
-      await upload();
-      await writeFile();
-      // Update the item
       const updatedData = {
         Title: this.state.title,
         MeetingTitle:this.state.meetingtitle,
@@ -486,47 +453,36 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
         AttendeesMOLEAId: this.state.users,
         AttendeesCustomer: this.state.attendeeDropdown,
         AttendeesOther: this.state.interestedPartiesexternalstr,
-        PurposeofMeetingDocuments: this.state.pmdocuments,
-        ManagementSummaryDocuments:this.state.msdocuments,
-        MainMinutesDocuments:this.state.mmdocuments,
         AttendeesMOLEADisplayNames:(JSON.stringify(this.state.usersdisplayName)).slice(1, -1).replace(/"/g, '').replace(/,/g, ", "),
       };
-      return updateData(this.props,listId, updatedData);
-    })
-     .then(async () => {
-      //console.log('Item Updated successfully');
-      // Perform any further actions if needed
-      await callflow()
-      /* isbuttondisbled = false;
-      buttontext = "Submit"
-      this.setState({ isSuccess: true });
+      updateData(this.props,listId, updatedData).then(async () => {
+      await upload();
+      await writeFile();
+      const updatedDatadoclink = {
+       PurposeofMeetingDocuments: this.state.expmdocuments,
+        ManagementSummaryDocuments:this.state.msdocuments,
+        MainMinutesDocuments:this.state.mmdocuments,
+      };
+       updateData(this.props,listId, updatedDatadoclink).then(async () => {
+
+       }).then(async () => {
+     
+      callflow()
+     
+    }) .catch((error: any) => {
     
-    window.open(formconst.SUBMIT_REDIRECT(props),"_self") */
-    }) 
-    .catch((error: any) => {
-      
-      /*var obj = JSON.stringify(error);
-    
-      if(obj.indexOf("400") !== -1)
-      {    console.log("mATCH FOUND")
-            streamerror = true;
-           this.setState({allfieldsvalid:false}) 
-    }
-  
-      else{*/
       isbuttondisbled = false;
       buttontext = "Submit";
       isLoading = false;
       this.setState({ isfailure: true });
       console.log('Error:', error);//}
     });
-    const callflow = () =>{  
-      //const postURL = "https://prod-30.centralindia.logic.azure.com:443/workflows/9faa10085fbd45898a35ad4a0ef35c96/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=HJoQXT0cEgKWnMy2MJOjM3lU4HTNOpK_nJaKw-Zo7Og";  
-      //const postURL = "https://prod-04.uksouth.logic.azure.com:443/workflows/ee066a883d5d4963b219ed3f0d019eb3/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=x6UwhOGMRsGdJfX5zNyYh6N0tII5UJs4dkd4qWsWyMQ";//SKP
-      //const postURL = "https://prod-21.westeurope.logic.azure.com:443/workflows/8b7d8eaf80f448d4ab98b79d3dffcba5/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=zJuPQYLWgvrdVrwelM3keIZxow7g60I8tYdgrSSNotw";//KWel
-      const postURL = "https://prod-22.uksouth.logic.azure.com:443/workflows/59d54402715d43dfa56735dbc42b03f9/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=OzFad8oCWSKEq56j7IVpq4AkQmZZS3mMkeoPURLdUBA";//Client
+   });
+     const callflow = () =>{  
+      //const postURL = "https://prod-22.uksouth.logic.azure.com:443/workflows/59d54402715d43dfa56735dbc42b03f9/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=OzFad8oCWSKEq56j7IVpq4AkQmZZS3mMkeoPURLdUBA";//Client
+      const postURL=""
       const body: string = JSON.stringify({  
-        //'emailaddress': "kastuv@k6931.onmicrosoft.com",  
+     
         'meetingID': this.state.title,  
         'customer': this.state.customer,  
       });
@@ -540,10 +496,7 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
         body: body,  
         headers: requestHeaders  
       };  
-      
-     
-      
-     props.context.httpClient.post(postURL,HttpClient.configurations.v1,httpClientOptions)  
+      props.context.httpClient.post(postURL,HttpClient.configurations.v1,httpClientOptions)  
     
         .then(() => {  
           isbuttondisbled = false;
@@ -600,11 +553,11 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
   const upload = async () => {
   
       console.log(folderUrl)
-      const _sp :SPFI = getSP(props.context) ;
+      //const _sp :SPFI = getSP(props.context) ;
       let strbgurl = "";
       let vstrbgurl = "";
       let ostrbgurl = "";
-      _sp.web.folders.addUsingPath(folderUrl);
+     // _sp.web.folders.addUsingPath(folderUrl);
       // bgfiles
       
       let bgfileurl = [];
@@ -631,7 +584,16 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
         let convertedStr = bgfileurl.map(url => `<a href="${url.trim()}" target="_blank">${url.substring(url.lastIndexOf("/") + 1)}</a>`);
          strbgurl = convertedStr.toString().replace(/,/g, ", ");
           //console.log(strbgurl);
-          this.setState({ pmdocuments: strbgurl });
+          //this.setState({ pmdocuments: strbgurl });
+          this.setState((prevState) => {
+            if (prevState.expmdocuments == null) {
+              return { expmdocuments: strbgurl };
+
+            } else {
+              return { expmdocuments: prevState.expmdocuments + strbgurl };
+            }
+          });
+          console.log(this.state.expmdocuments)
       }
         
        else {
@@ -697,14 +659,9 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
         
       }
   
-      
-     
-    }
-      
-      
-
     }
 
+    }
 
       private cancel =()=>{
         window.open(formconst.CANCEL_REDIRECT(this.props),"_self");
@@ -718,7 +675,10 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
         buttontext = "Submit"
       
       }
-
+      handleClearClick = () => {
+        // Clear the expmdocuments state
+        this.setState({ expmdocuments: '' });
+      };
 
   public render(): React.ReactElement<IMeetingMinutesFormProps> {
     const {interestedPartiesexternal } = this.state;
@@ -755,13 +715,7 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
         <MessageBar messageBarType={MessageBarType.error}>Main Minutes
         is required.</MessageBar>
         : null; 
-      
-/*       attcustFieldErrorMessage = (this.state.attendeeDropdown).length == 0  ?
-        <MessageBar messageBarType={MessageBarType.error}>Attendees (Customer)
-        is required.</MessageBar>
-        : null; */
-
-
+ 
       EmailFieldErrorMessage= isemailInvalid ?
       <MessageBar messageBarType={MessageBarType.error}>Please enter a valid email address.</MessageBar>
       : null;
@@ -769,12 +723,6 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
       imageFieldErrorMessage = streamerror ? <MessageBar messageBarType={MessageBarType.blocked} isMultiline={false} onDismiss={this._resetrichtext} dismissButtonAriaLabel="Close"
       truncated={true} overflowButtonAriaLabel="See more">Stream size exceeds the allowed limit. Note that the image size in the rich text field should be less than 80 KB .
       On closing the dialog will reset the rich text field values </MessageBar>: null;
-
-        //1048576 bytes = 1MB
-        //let allRichtextsizebinary = new Blob([this.state.purposeofmeeting]).size + new Blob([this.state.managementsummary]).size + new Blob([this.state.mainminutes]).size + new Blob([this.state.actions]).size;
-        //allRichtextsizebinaryErrorMessage = allRichtextsizebinary>1048000?
-        //<MessageBar messageBarType={MessageBarType.error}>New request size exceeds allowed limit. Recommend reducing image sizes. </MessageBar>
-        //: null;
 
        FormFieldErrorMessage= 
        <MessageBar messageBarType={MessageBarType.error}>Please provide all required information and submit the form.</MessageBar>
@@ -792,9 +740,7 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
    return (
       <section>
         <div>
-{/*         <div>
-          <p><span className={styles.required}><b>*</b></span> Required.</p>
-          </div> */}
+
           <p className={styles.heading}>Overview</p>
         {/* <p className={styles.formlabel}>Customer<span className={styles.required}> *</span></p> */}
         <p className={styles.formlabel}>Customer</p>
@@ -852,7 +798,7 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
           enableDefaultSuggestions={true}
           onSelectedItem={this._onattendesSelectedItem}
           noResultsFoundText="No AttendeesattendeeDropdown Found"
-          defaultSelectedItems = {(this.state.attendeeDropdown).split(',')}/>
+          defaultSelectedItems = {((this.state.attendeeDropdown).split(',')).map(item => ({ key: item.trim(),name:item.trim()}))}/>
           {/* defaultSelectedItems = {[]}/>{attcustFieldErrorMessage} */}
 
           <Stack horizontal verticalAlign="end" className={styles.attendeesotherstackContainer }>
@@ -870,8 +816,8 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
             <span key={index}>{party}{index !== interestedPartiesexternal.length - 1 && '; '}</span>
           ))}
         </div>    
-        <br/>
-        {EmailFieldErrorMessage}
+        <br/>{EmailFieldErrorMessage}
+        
         <p className={styles.heading}>Meeting Details</p>    
          <p className={styles.formlabel}>Purpose of Meeting<span className={styles.required}> *</span></p>
          <ReactQuill theme='snow'
@@ -899,7 +845,15 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
           </span>
         </p>
       </div>
+      <br />
+      <div>
+        <label>Existing Files:</label>
 
+        <span dangerouslySetInnerHTML={{ __html: this.state.expmdocuments }}></span>
+        {this.state.expmdocuments && (
+          <button onClick={this.handleClearClick}>Clear</button>
+        )}
+</div>
       <p className={styles.formlabel}>Management Summary</p>
          <ReactQuill theme='snow'
           modules={formconst.modules}    
@@ -962,7 +916,7 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
       ></ReactQuill></div>
       <br />
       <Stack horizontal horizontalAlign='end' className={styles.stackContainer}>     
-      <PrimaryButton text={buttontext} onClick={() => this._createItem(this.props)} disabled= {isbuttondisbled}/>
+      <PrimaryButton text={buttontext} onClick={() => this._updateItem(this.props)} disabled= {isbuttondisbled}/>
       <PrimaryButton text="Cancel"  onClick ={this.cancel}/>
    
       </Stack> 
