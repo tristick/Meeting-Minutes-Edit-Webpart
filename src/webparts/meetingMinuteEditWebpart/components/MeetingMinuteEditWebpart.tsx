@@ -675,9 +675,17 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
         buttontext = "Submit"
       
       }
-      handleClearClick = () => {
+      handlexpmClearClick = () => {
         // Clear the expmdocuments state
         this.setState({ expmdocuments: '' });
+      };
+      handlexmsClearClick = () => {
+        // Clear the expmdocuments state
+        this.setState({ exmsdocuments: '' });
+      };
+      handlexmmClearClick = () => {
+        // Clear the expmdocuments state
+        this.setState({ exmmdocuments: '' });
       };
 
   public render(): React.ReactElement<IMeetingMinutesFormProps> {
@@ -851,7 +859,7 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
 
         <span dangerouslySetInnerHTML={{ __html: this.state.expmdocuments }}></span>
         {this.state.expmdocuments && (
-          <button onClick={this.handleClearClick}>Clear</button>
+          <button onClick={this.handlexpmClearClick}>Clear</button>
         )}
 </div>
       <p className={styles.formlabel}>Management Summary</p>
@@ -880,6 +888,16 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
           </span>
         </p>
       </div>
+      <br />
+      <div>
+        <label>Existing Files:</label>
+
+        <span dangerouslySetInnerHTML={{ __html: this.state.exmsdocuments }}></span>
+        {this.state.exmsdocuments && (
+          <button onClick={this.handlexmsClearClick}>Clear</button>
+        )}
+</div>
+      
 
       <p className={styles.formlabel}>Main Minutes<span className={styles.required}> *</span></p>
          <ReactQuill theme='snow'
@@ -907,7 +925,15 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
           </span>
         </p>
       </div>
+      <br />
+      <div>
+        <label>Existing Files:</label>
 
+        <span dangerouslySetInnerHTML={{ __html: this.state.exmmdocuments }}></span>
+        {this.state.exmmdocuments && (
+          <button onClick={this.handlexmmClearClick}>Clear</button>
+        )}
+</div>  
       <p className={styles.formlabel}>Actions</p>
          <ReactQuill theme='snow'
           modules={formconst.modules}    
