@@ -460,8 +460,8 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
       await writeFile();
       const updatedDatadoclink = {
        PurposeofMeetingDocuments: this.state.expmdocuments,
-        ManagementSummaryDocuments:this.state.msdocuments,
-        MainMinutesDocuments:this.state.mmdocuments,
+        ManagementSummaryDocuments:this.state.exmsdocuments,
+        MainMinutesDocuments:this.state.exmmdocuments,
       };
        updateData(this.props,listId, updatedDatadoclink).then(async () => {
 
@@ -590,7 +590,7 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
               return { expmdocuments: strbgurl };
 
             } else {
-              return { expmdocuments: prevState.expmdocuments + strbgurl };
+              return { expmdocuments: prevState.expmdocuments + ', ' + strbgurl };
             }
           });
           console.log(this.state.expmdocuments)
@@ -621,7 +621,15 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
         let vconvertedStr = vfileurl.map(url => `<a href="${url.trim()}" target="_blank">${url.substring(url.lastIndexOf("/") + 1)}</a>`);
        vstrbgurl = vconvertedStr.toString().replace(/,/g, ", ");
       //console.log(vstrbgurl);
-      this.setState({ msdocuments: vstrbgurl });
+      this.setState((prevState) => {
+        if (prevState.exmsdocuments == null) {
+          return { exmsdocuments: vstrbgurl };
+
+        } else {
+          return { exmsdocuments: prevState.exmsdocuments + ', ' + vstrbgurl };
+        }
+      });
+      console.log(this.state.exmsdocuments)
       
       } else {
         console.log("No file selected for upload.");
@@ -652,7 +660,15 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
         let oconvertedStr = ofileurl.map(url => `<a href="${url.trim()}" target="_blank">${url.substring(url.lastIndexOf("/") + 1)}</a>`);
          ostrbgurl = oconvertedStr.toString().replace(/,/g, ", ");
         //console.log(ostrbgurl);
-        this.setState({ mmdocuments: ostrbgurl });
+        this.setState((prevState) => {
+          if (prevState.exmmdocuments == null) {
+            return { exmmdocuments: ostrbgurl };
+
+          } else {
+            return { exmmdocuments: prevState.exmmdocuments + ', ' + ostrbgurl };
+          }
+        });
+        console.log(this.state.exmmdocuments)
         
       } else {
         console.log("No file selected for upload.");
@@ -806,7 +822,12 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
           enableDefaultSuggestions={true}
           onSelectedItem={this._onattendesSelectedItem}
           noResultsFoundText="No AttendeesattendeeDropdown Found"
-          defaultSelectedItems = {((this.state.attendeeDropdown).split(',')).map(item => ({ key: item.trim(),name:item.trim()}))}/>
+          //defaultSelectedItems = {((this.state.attendeeDropdown).split(',')).map(item => ({ key: item.trim(),name:item.trim()}))}
+          defaultSelectedItems={
+            this.state.attendeeDropdown
+              ? ((this.state.attendeeDropdown).split(',')).map(item => ({ key: item.trim(), name: item.trim() }))
+              : []
+          }/>
           {/* defaultSelectedItems = {[]}/>{attcustFieldErrorMessage} */}
 
           <Stack horizontal verticalAlign="end" className={styles.attendeesotherstackContainer }>
