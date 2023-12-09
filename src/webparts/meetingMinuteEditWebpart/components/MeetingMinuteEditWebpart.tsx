@@ -590,7 +590,8 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
               return { expmdocuments: strbgurl };
 
             } else {
-              return { expmdocuments: prevState.expmdocuments + ', ' + strbgurl };
+              return { expmdocuments: (prevState.expmdocuments + ', ' + strbgurl).replace(/^,\s*/, '')};
+              //return { expmdocuments: (prevState.expmdocuments ? prevState.expmdocuments + ', ' : '') + strbgurl }.expmdocuments.trim();
             }
           });
           console.log(this.state.expmdocuments)
@@ -626,7 +627,7 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
           return { exmsdocuments: vstrbgurl };
 
         } else {
-          return { exmsdocuments: prevState.exmsdocuments + ', ' + vstrbgurl };
+          return {exmsdocuments: (prevState.exmsdocuments + ', ' + vstrbgurl).replace(/^,\s*/, '') };
         }
       });
       console.log(this.state.exmsdocuments)
@@ -665,7 +666,7 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
             return { exmmdocuments: ostrbgurl };
 
           } else {
-            return { exmmdocuments: prevState.exmmdocuments + ', ' + ostrbgurl };
+            return { exmmdocuments: (prevState.exmmdocuments + ', ' + ostrbgurl).replace(/^,\s*/, '') };
           }
         });
         console.log(this.state.exmmdocuments)
@@ -847,7 +848,7 @@ export default class MeetingMinuteEditWebpart extends React.Component<IMeetingMi
         </div>    
         <br/>{EmailFieldErrorMessage}
         
-        <p className={styles.heading}>Meeting Details</p>    
+        <p className={styles.heading}>Test Meeting Details</p>    
          <p className={styles.formlabel}>Purpose of Meeting<span className={styles.required}> *</span></p>
          <ReactQuill theme='snow'
           modules={formconst.modules}    
